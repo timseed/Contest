@@ -1,4 +1,5 @@
 import yaml
+import logging
 
 class qso_settings(object):
     def __init__(self, filename):
@@ -14,12 +15,19 @@ class qso_settings(object):
         return str(self.data['settings'][key])
 
 class qso_text_builder(object):
+    """
+    A QSO Builder for any form of automatic QSO's
+    """
     def __init__(self, config_filename):
         self._call = ''
         self._sent = ''
         self._receive = ''
         self._number = 0
+        self.logger = logging.getLogger(__name__)
         self.setting = qso_settings(config_filename)
+        self._mode =  0
+        #RUN = 0
+        #SP = 1
 
     def clear(self):
         self._call = ''
@@ -47,34 +55,63 @@ class qso_text_builder(object):
     def setReceive(self, c):
         self._receive = c
 
+    def getMode(self):
+        return str(self._mode)
+
+    def setMode(self,c):
+        self._mode=c
+
     def qso_text(self):
         cl = len(self._call)
         sl = len(self._sent)
         rl = len(self._receive)
-
-        if cl == 0 and sl == 0 and rl == 0:
-            # MSG1
-            return self.make_text(1)
-        elif cl < 3 and sl == 0 and rl == 0:
-            # Partial call
-            # MSG2
-            return self.make_text(2)
-        elif cl > 2 and sl == 0 and rl == 0:
-            # MSG3
-            # Got call  - send sumber
-            self.newnumber()
-            self.setSent(self.getnumber())
-            return self.make_text(3)
-        elif cl > 2 and sl > 0 and rl == 0:
-            # MSG4
-            # We have sent - but we have not heard out return value
-            return self.make_text(4)
-        elif cl > 2 and sl > 0 and rl > 0:
-            # MSG5
-            # We have everythng we need
-            self.clear()
-            return self.make_text(5)
-        return "Opps"
+        if self._mode == 0:
+            #Run MODE
+            if cl == 0 and sl == 0 and rl == 0:
+                # MSG1
+                self.logger.info("MSG1")
+                return self.make_text(1)
+            elif cl < 3 and sl == 0 and rl == 0:
+                # Partial call
+                # MSG2
+                self.logger.info("MSG2")
+                return self.make_text(2)
+            elif cl > 2 and sl == 0 and rl == 0:
+                # MSG3
+                # Got call  - send sumber
+                self.newnumber()
+                self.setSent(self.getnumber())
+                self.logger.info("MSG3")
+                return self.make_text(3)
+            elif cl > 2 and sl > 0 and rl == 0:
+                # MSG4
+                # We have sent - but we have not heard out return value
+                self.logger.info("MSG4")
+                return self.make_text(4)
+            elif cl > 2 and sl > 0 and rl > 0:
+                # MSG5
+                # We have everythng we need
+                self.logger.info("MSG5")
+                self.clear()
+                return self.make_text(5)
+            return "Opps"
+        else:
+            #S&P Mode
+            if cl >3 and sl == 0 and rl == 0:
+                # Make Contact
+                self.logger.info("MSG6")
+                return self.make_text(6)
+            elif cl >3 and sl == 0 and rl > 0:
+                #
+                self.newnumber()
+                self.setSent(self.getnumber())
+                self.logger.info("MSG7")
+                return self.make_text(7)
+            elif cl >3 and sl >0  and rl > 0:
+                self.logger.info("MSG8")
+                return self.make_text(8)
+            else:
+                return "Eek S&P Error"
 
     def show(self, sz):
         print("%s" % sz)
@@ -85,7 +122,7 @@ class qso_text_builder(object):
        :param MSG_NUM: 1-5 int
        :return:
        """
-        if MSG_NUM > 5 or MSG_NUM < 1:
+        if MSG_NUM > 8 or MSG_NUM < 1:
             return "Bad Msg Number"
         #Get Initial MSG from YAML File
         text = self.setting.get("MSG" + str(MSG_NUM))
@@ -98,15 +135,48 @@ class qso_text_builder(object):
         return text
 
 if __name__ == "__main__":
-    q = qso_text_builder("ru_test.yaml")
-
+    q = qso_text_builder("Contest/ru_test.yaml")
+    m=0
+    print("======= Run Mode Test ============")
+    print("=== All Empty ===")
     q.show(q.qso_text())
+    print("=== Partial Call ===")
     q.setCall('m')
     q.show(q.qso_text())
+    print("=== Full Call ===")
     q.setCall('m0fgc')
     q.show(q.qso_text())
+    print("===  No Number  ===")
+    q.setReceive("")
     q.show(q.qso_text())
+    print("=== Got Number ===")
     q.setReceive("12")
     q.show(q.qso_text())
+
+    print("=== All Empty ===")
+    q.setMode(1)
+    q.clear()
+    print("=== Full Call ===")
+    q.setCall('m0fgc')
     q.show(q.qso_text())
+    print("===  No Number  ===")
+    q.setReceive("")
+    q.show(q.qso_text())
+    print("=== Got Number ===")
+    q.setReceive("12")
+    q.show(q.qso_text())
+    print("=== Got ALL ===")
+    q.show(q.qso_text())
+    print("======New Contact=========")
+    q.clear()
+    print("=== Full Call ===")
+    q.setCall('m1fgc')
+    q.show(q.qso_text())
+    print("===  No Number  ===")
+    q.setReceive("")
+    q.show(q.qso_text())
+    print("=== Got Number ===")
+    q.setReceive("12")
+    q.show(q.qso_text())
+    print("=== Got ALL ===")
     q.show(q.qso_text())

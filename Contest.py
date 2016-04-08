@@ -11,6 +11,7 @@ from spidWidget import spidWidget
 from spid3 import spid
 from qtbeacon import qtbeacon
 from datetime import datetime
+from qso_text_builder import qso_text_builder
 
 
 class QSOMod(Enum):
@@ -61,6 +62,7 @@ class Contest(Ui_MainWindow):
         self._spidgui.STOP.connect(self._spid.stop)
         self._spidgui.STATUS.connect(self._spid.status)
 
+        self.textbuilder = qso_text_builder("Contest/ru_test.yaml")
 
         try:
             self.Rig = K3()  # My Rig Controll Class
@@ -115,11 +117,15 @@ class Contest(Ui_MainWindow):
             self._number = 1
             return self._number
 
-    def calcText(self):
-        self._textgen.what()
-
+   # def calcText(self):
+   #     self._textgen.what()
 
     def GetText(self, widget):
+        """
+        Gets Text Value from a Widget
+        :param widget:
+        :return:
+        """
         try:
             tmp = widget.text()
             logging.debug(str.format("Widget Name <{}> Value <{}>",str(widget.objectName()),tmp))
@@ -153,6 +159,26 @@ class Contest(Ui_MainWindow):
         #      self.BAND.setText(meters)
 
     def retPressed(self):
+
+        self.textbuilder.setMode(0)
+        self.textbuilder.setCall(self.GetText(self.qso.CALL))
+        self.textbuilder.setReceive(self.GetText(self.qso.RECEIVE))
+
+        txttosend=self.textbuilder.qso_text()
+        logging.debug("txttosend is "+txttosend)
+        #
+        #Replace QRS and QRQ with the CW Commands
+        #
+        fastcw=str.format('KS{03d}; KYW ',self.GetText(self.cww.QRQ))
+        slowcw=str.format('KS{03d}; KYW ',self.GetText(self.cww.QRS))
+
+
+        txttosend = txttosend.replace('QRQ',fastcw)
+        txttosend = txttosend.replace('QRS',slowcw)
+        self.CMD.setPlainText(txttosend)
+        self.Rig.sendcw(txttosend)
+
+    def retPressed_orig(self):
         print("rePressed")
         txttosend = self.what_to_send(self._mode,
                                       self.GetText(self.qso.CALL),
@@ -161,6 +187,7 @@ class Contest(Ui_MainWindow):
         logging.debug("txttosend is "+txttosend)
         self.CMD.setPlainText(txttosend)
         self.Rig.sendcw(txttosend)
+
 
     def onBEACON(self,data):
         logging.debug("Beacon Data Arrived")
@@ -178,8 +205,6 @@ class Contest(Ui_MainWindow):
                 self.beaconTable.setItem(rowPosition , i, QtWidgets.QTableWidgetItem(str(n[i])))
             rowPosition += 1
 
-
-
     def runMode(self, data):
         if data == "RUN":
             logging.info("Run Mode")
@@ -192,7 +217,6 @@ class Contest(Ui_MainWindow):
 
     def key_speed(self, type=0, text=''):
         """
-
         :param type: 0 Means Number - the default. 1 means Text/Message
         :param text: Initial String
         :return:
