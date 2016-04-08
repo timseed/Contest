@@ -38,6 +38,10 @@ class qso_text_builder(QtCore.QObject):
         #RUN = 0
         #SP = 1
 
+    def setrulesfile(self,filename):
+        self.logger.info(str.format("Config filename {} being used",filename))
+        self.setting = qso_settings(filename)
+
     def clear(self):
         self._call = ''
         self._sent = ''

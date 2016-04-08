@@ -154,12 +154,26 @@ class qsoWidget(QtWidgets.QWidget):
                 n=len(file.readlines())
                 file.close()
         except:
-            n=1
+            n=0
         return n
+
+    def setfiles(self,qso_file,rules_file):
+        self.setContestFile(rules_file)
+        self.setQsoFile(qso_file)
+
+    def setContestFile(self,rules_file):
+        self.logger.info(str.format("Setting Contest file to {}",rules_file))
+        self.textbuilder.setrulesfile(rules_file)
+
+    def setQsoFile(self,qso_file):
+        self.logger.info(str.format("Setting Qso file to {}",qso_file))
+        self.qsofile=qso_file
+        self.textbuilder.setnumber(self.getMaxSentNumber())
+
 
     def saveQSO(self):
 
-        ofp=open("QSO.csv","a")
+        ofp=open(self.qsofile,"a")
         line=str.format("{},{},{},{},{},{}\n",datetime.now().isoformat(),
                                 self.BAND.currentText(),
                                 self.MODE.currentText(),
