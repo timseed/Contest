@@ -66,7 +66,7 @@ class Contest(Ui_MainWindow):
             self.Rig = K3()  # My Rig Controll Class
             self.Band = HamBand()  # Work out the Ham Bands
         except:
-            print("No k3 Present")
+            self.logger.error("No k3 Present")
 
     def escape(self):
         junk = 1
@@ -160,7 +160,7 @@ class Contest(Ui_MainWindow):
                                       self.GetText(self.qso.RECEIVE))
         logging.debug("txttosend is "+txttosend)
         self.CMD.setPlainText(txttosend)
-        # self.Rig.sendcw(txttosend)
+        self.Rig.sendcw(txttosend)
 
     def onBEACON(self,data):
         logging.debug("Beacon Data Arrived")
