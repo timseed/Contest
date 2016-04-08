@@ -7,7 +7,7 @@ from rbn import HamBand
 from MyEventFilter import MyQSOEventFilter
 from qsoWidget import qsoWidget
 from cwWidget import cwWidget
-from Spid import spidWidget
+from spidWidget import spidWidget
 from spid3 import spid
 from qtbeacon import qtbeacon
 from datetime import datetime
@@ -58,6 +58,9 @@ class Contest(Ui_MainWindow):
         self.beacon_network.start()
 
         self._spidgui.MOVETO.connect(self._spid.moveto)
+        self._spidgui.STOP.connect(self._spid.stop)
+        self._spidgui.STATUS.connect(self._spid.status)
+
 
         try:
             self.Rig = K3()  # My Rig Controll Class

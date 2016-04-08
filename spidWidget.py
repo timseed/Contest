@@ -5,8 +5,8 @@ import logging
 class spidWidget(QtWidgets.QWidget):
 
   MOVETO = QtCore.pyqtSignal(str)
-  Stop   = QtCore.pyqtSignal(str)
-  Status = QtCore.pyqtSignal(str)
+  STOP   = QtCore.pyqtSignal(str)
+  STATUS = QtCore.pyqtSignal(str)
 
   def __init__(self, parent = None):
 
@@ -17,19 +17,22 @@ class spidWidget(QtWidgets.QWidget):
      cancelButton.setStyleSheet('QPushButton {background-color: #FF0000; foreground-color: #00FFFF;}')
      statusButton = QtWidgets.QPushButton("Status",self)     
      statusButton.setStyleSheet('QPushButton {background-color: #00FF00; foreground-color: #00FFFF;}')
+     rotateButton = QtWidgets.QPushButton("Rotate",self)
      self.bearingSpinBox = QDoubleSpinBox()
      self.bearingSpinBox.setRange(0, 360)
-     self.bearingSpinBox.setDecimals(5)
+     self.bearingSpinBox.setDecimals(0)
 
-     self.bearingSpinBox.valueChanged['double'].connect(self.bearingChanged)
+     #self.bearingSpinBox.valueChanged['double'].connect(self.bearingChanged)
      cancelButton.clicked.connect(self.stop)
      statusButton.clicked.connect(self.status)
+     rotateButton.clicked.connect(self.bearingChanged)
      QtCore.QMetaObject.connectSlotsByName(self)
      layout = QGridLayout(self)
      layout.addWidget(bearingLabel, 0, 0)
      layout.addWidget(self.bearingSpinBox, 0, 1)
-     layout.addWidget(cancelButton,1, 0)
-     layout.addWidget(statusButton,1, 1)
+     layout.addWidget(rotateButton,1, 1,1,1)
+     layout.addWidget(cancelButton,2, 0)
+     layout.addWidget(statusButton,2, 1)
 
   def bearingChanged(self):
      #Emit a Signal so some other class can connect to this
@@ -39,8 +42,8 @@ class spidWidget(QtWidgets.QWidget):
 
   def stop(self,val):
      self.logger.debug("Stop")
-     self.Stop.emit("Stop")
+     self.STOP.emit("Stop")
 
   def status(self,val):
      self.logger.debug("Status")
-     self.Status.emit("Status")
+     self.STATUS.emit("Status")
