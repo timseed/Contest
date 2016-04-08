@@ -4,7 +4,7 @@ from dxcc import dxcc_all
 from ContestUI import *
 from k3 import K3
 from rbn import HamBand
-from MyEventFilter import MyQSOEventFilter
+#from MyEventFilter import MyQSOEventFilter
 from qsoWidget import qsoWidget
 from cwWidget import cwWidget
 from spidWidget import spidWidget
@@ -36,7 +36,6 @@ class Contest(Ui_MainWindow):
         self._mode = 0
         self._call = ''
         self._calllen = 0
-
         self._sent = ''
         self._sentlen = 0
 
@@ -48,11 +47,8 @@ class Contest(Ui_MainWindow):
         self.qso.RUN.connect(self.runMode)
         self.qso.SEARCH.connect(self.runMode)
 
-        self.qso.myQSOFilter.QSORETURN.connect(self.retPressed)
+        #self.qso.myQSOFilter.QSORETURN.connect(self.retPressed)
         self.CTRYLIST = self._dxcclist.CountryList()
-
-        #
-        #
 
         self.beacon_network = qtbeacon()
         self.beacon_network.BEACON.connect(self.onBEACON)
@@ -61,13 +57,13 @@ class Contest(Ui_MainWindow):
         self._spidgui.MOVETO.connect(self._spid.moveto)
         self._spidgui.STOP.connect(self._spid.stop)
         self._spidgui.STATUS.connect(self._spid.status)
-
-        self.textbuilder = qso_text_builder("Contest/ru_test.yaml")
+        self.qso.TEXT.connect(self.retPressed)
 
         try:
             self.Rig = K3()  # My Rig Controll Class
             self.Band = HamBand()  # Work out the Ham Bands
         except:
+            self.Rig = None
             self.logger.error("No k3 Present")
 
     def escape(self):
@@ -158,35 +154,17 @@ class Contest(Ui_MainWindow):
         #      meters=self.Band.M(freqhz)
         #      self.BAND.setText(meters)
 
-    def retPressed(self):
-
-        self.textbuilder.setMode(0)
-        self.textbuilder.setCall(self.GetText(self.qso.CALL))
-        self.textbuilder.setReceive(self.GetText(self.qso.RECEIVE))
-
-        txttosend=self.textbuilder.qso_text()
-        logging.debug("txttosend is "+txttosend)
-        #
-        #Replace QRS and QRQ with the CW Commands
-        #
-        fastcw=str.format('KS{03d}; KYW ',self.GetText(self.cww.QRQ))
-        slowcw=str.format('KS{03d}; KYW ',self.GetText(self.cww.QRS))
-
-
+    def retPressed(self,txttosend):
+        print("In retPressed data passed is "+txttosend)
+        fast=self.cww.lbQRQ.text()
+        print("fast is %s"%fast)
+        fastcw=str.format('KS{:03d}; KYW ',int(self.GetText(self.cww.lbQRQ)))
+        slowcw=str.format('KS{:03d}; KYW ',int(self.GetText(self.cww.lbQRS)))
         txttosend = txttosend.replace('QRQ',fastcw)
         txttosend = txttosend.replace('QRS',slowcw)
         self.CMD.setPlainText(txttosend)
-        self.Rig.sendcw(txttosend)
-
-    def retPressed_orig(self):
-        print("rePressed")
-        txttosend = self.what_to_send(self._mode,
-                                      self.GetText(self.qso.CALL),
-                                      self.GetText(self.qso.SENT),
-                                      self.GetText(self.qso.RECEIVE))
-        logging.debug("txttosend is "+txttosend)
-        self.CMD.setPlainText(txttosend)
-        self.Rig.sendcw(txttosend)
+        if self.Rig is not None:
+            self.Rig.sendcw(txttosend)
 
 
     def onBEACON(self,data):

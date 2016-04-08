@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import *
 
 class cwWidget(QtWidgets.QWidget):
     # Some Signals we want to send from this class
-    QRQ = QtCore.pyqtSignal(str)
-    QRS = QtCore.pyqtSignal(str)
+    #QRQ = QtCore.pyqtSignal(str)
+    #QRS = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
 
@@ -17,11 +17,11 @@ class cwWidget(QtWidgets.QWidget):
 
         self.lbQRQ= QtWidgets.QLineEdit()
         self.lbQRQ.setObjectName("QRQ")
-        self.lbQRS = QtWidgets.QLineEdit()
-        self.lbQRQ.setObjectName("QRS")
         self.lbQRQ.setText("35")
-        self.lbQRS.setText("25")
 
+        self.lbQRS = QtWidgets.QLineEdit()
+        self.lbQRS.setObjectName("QRS")
+        self.lbQRS.setText("25")
         layout = QGridLayout(self)
         layout.addWidget(l1, 1, 0)
         layout.addWidget(self.lbQRQ, 1, 1)

@@ -1,5 +1,8 @@
 import yaml
 import logging
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import *
+
 
 class qso_settings(object):
     def __init__(self, filename):
@@ -14,11 +17,17 @@ class qso_settings(object):
         """
         return str(self.data['settings'][key])
 
-class qso_text_builder(object):
+class qso_text_builder(QtCore.QObject):
     """
     A QSO Builder for any form of automatic QSO's
     """
+
+    SENT = QtCore.pyqtSignal(str)
+    RECEIVED = QtCore.pyqtSignal(str)
+    QSL  = QtCore.pyqtSignal(str)
+
     def __init__(self, config_filename):
+        super(qso_text_builder,self).__init__()
         self._call = ''
         self._sent = ''
         self._receive = ''
@@ -40,6 +49,16 @@ class qso_text_builder(object):
     def getnumber(self):
         return str(self._number)
 
+    def setnumber(self,c):
+        """
+        This should only be called 1 time - when the Setup is being run.
+        So we can stop and start the logger
+        :param c:
+        :return:
+        """
+
+        self._number=c
+
     def setCall(self, c):
         self._call = c
 
@@ -54,6 +73,9 @@ class qso_text_builder(object):
 
     def setReceive(self, c):
         self._receive = c
+
+    def getReceive(self):
+        return str(self._receive)
 
     def getMode(self):
         return str(self._mode)
@@ -81,6 +103,7 @@ class qso_text_builder(object):
                 # Got call  - send sumber
                 self.newnumber()
                 self.setSent(self.getnumber())
+                self.SENT.emit(self.getnumber())
                 self.logger.info("MSG3")
                 return self.make_text(3)
             elif cl > 2 and sl > 0 and rl == 0:
@@ -93,6 +116,7 @@ class qso_text_builder(object):
                 # We have everythng we need
                 self.logger.info("MSG5")
                 self.clear()
+                self.QSL.emit('QSL')
                 return self.make_text(5)
             return "Opps"
         else:
@@ -105,10 +129,12 @@ class qso_text_builder(object):
                 #
                 self.newnumber()
                 self.setSent(self.getnumber())
+                self.SENT.emit(self.getSent())
                 self.logger.info("MSG7")
                 return self.make_text(7)
             elif cl >3 and sl >0  and rl > 0:
                 self.logger.info("MSG8")
+                self.QSL.emit('QSL')
                 return self.make_text(8)
             else:
                 return "Eek S&P Error"

@@ -3,12 +3,16 @@ from PyQt5.QtWidgets import *
 from MyEventFilter import MyQSOEventFilter
 from dxcc import dxcc_all
 import logging
+from qso_text_builder import qso_text_builder
+from datetime import datetime
 
 class qsoWidget(QtWidgets.QWidget):
     logger = logging.getLogger(__name__)
     # Some Signals we want to send from this class
     RUN = QtCore.pyqtSignal(str)
     SEARCH = QtCore.pyqtSignal(str)
+    TEXT = QtCore.pyqtSignal(str)
+    SAVE = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
 
@@ -23,7 +27,10 @@ class qsoWidget(QtWidgets.QWidget):
         self.BAND.addItem("20")
         self.BAND.addItem("15")
         self.BAND.addItem("10")
-        
+        self._lastcall=""
+        self.qsl=False
+        self.qsofile="QSO.csv"
+
         self.MODE= QtWidgets.QComboBox()
         self.MODE.setObjectName("MODE")
         self.MODE.addItem("CW")
@@ -84,8 +91,16 @@ class qsoWidget(QtWidgets.QWidget):
 
         self.myQSOFilter = MyQSOEventFilter()
         self.installEventFilter(self.myQSOFilter)
+        #
+        #Wire up the signals
+        #
         self.myQSOFilter.QSORETURN.connect(self.retPressed)
+        self.textbuilder = qso_text_builder('Contest/ru_test.yaml')
+        self.textbuilder.SENT.connect(self.setSent)
+        self.textbuilder.QSL.connect(self.setQSL)
 
+        #Get the Max QSO Number
+        self.textbuilder.setnumber(self.getMaxSentNumber())
 
     def retPressed(self,DATA):
         '''
@@ -94,21 +109,79 @@ class qsoWidget(QtWidgets.QWidget):
         :return:
         '''
         logging.info("retPressed - lookup Callsign")
+        print("Ret Pressed")
         try:
-            call = self.CALL.text()
+            call = self.CALL.text().upper()
             if len(call)>0:
-                logging.info("retPressed - lookup Callsign")
+                logging.info("Call Longer then 0 ")
                 ctry = self._dxcclist.find(call)
+                logging.info("dx lookup Completed ")
                 #ctry is a DXCC Object
-                if len(call) >0:
+                if ctry is not None:
                     logging.debug(str.format("COUNTRY_NAME needs to be set as <{}>",ctry.Country_Name()))
                     self.COUNTRY_NAME.setText(ctry.Country_Name())
                 else:
                     logging.warning(str.format("Can not match Call of <{}>",call))
         except Exception as e:
-            logging.error(str.format("Exception Thrown {}",e.__class__.__name__))
+            logging.error(str.format("Call sign lookup Exception Thrown {}",e.__class__.__name__))
 
+        print("In RetPressed")
+        self.textbuilder.setMode(0)
+        self.textbuilder.setCall(self.CALL.text())
+        self.textbuilder.setReceive(self.RECEIVE.text())
+        self.textbuilder.setSent(self.SENT.text())
 
+        txttosend=self.textbuilder.qso_text()
+        logging.debug("txttosend is "+txttosend)
+        #
+        #Replace QRS and QRQ In the MAIN Window - as we do not own the CW Widget
+        #
+        self.TEXT.emit(txttosend)
+        if self.qsl==True:
+            self.saveQSO()
+            self.CALL.setFocus()
+
+    def setQSL(self):
+        self.qsl=True
+
+    def getMaxSentNumber(self):
+        """
+
+        :return: Line count from file
+        """
+        try:
+            with open(self.qsofile,"r") as file:
+                n=len(file.readlines())
+                file.close()
+        except:
+            n=1
+        return n
+
+    def saveQSO(self):
+
+        ofp=open("QSO.csv","a")
+        line=str.format("{},{},{},{},{},{}\n",datetime.now().isoformat(),
+                                self.BAND.currentText(),
+                                self.MODE.currentText(),
+                                self.CALL.text(),
+                                self.RST.text(),
+                                self.SENT.text(),
+                                self.RECEIVE.text())
+        ofp.write(line)
+        ofp.close()
+        self._lastcall == self.CALL
+        self.CALL.setText('')
+        self.SENT.setText('')
+        self.RECEIVE.setText('')
+        self.COUNTRY_NAME.setText('')
+        self.qsl=False
+        #      freqhz=self.Rig.qsyq()
+        #      meters=self.Band.M(freqhz)
+        #      self.BAND.setText(meters)
+
+    def setSent(self,num):
+        self.SENT.setText(num)
+        self.RECEIVE.setFocus()
 
     def sigMode(self):
         if self.rbRUN.isChecked():
