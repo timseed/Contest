@@ -3,8 +3,10 @@
 # Copyright (C) 2006-2011 Leigh L. Klotz, Jr <Leigh@WA5ZNU.org>
 # Licensed under Academic Free License 3.0 (See LICENSE)
 
-import string, serial, time, os
 import logging
+
+import serial
+
 
 class K3:
   def __init__(self):
@@ -98,7 +100,7 @@ class K3:
   # NB21; NB2, low thres
   def nbq(self):
     self.write("NB;")
-    result = self.read(5);
+    result = self.read(5)
     if (len(result) != 5):
       return 0
     level = result[2]
@@ -136,8 +138,8 @@ class K3:
   #
   # Get the mode
   def modeq(self):
-    self.write("K22;MD;");
-    result = self.read(4);
+      self.write("K22;MD;")
+      result = self.read(4)
     if (len(result) != 4):
       return "???: "+result
     modenum = int(result[2])
@@ -172,8 +174,8 @@ class K3:
   #
   # Get the preamp
   def paq(self):
-    self.write("PA;");
-    result = self.read(4);
+      self.write("PA;")
+      result = self.read(4)
     if (len(result) != 4):
       return 0
     if result == "PA1;":
@@ -225,15 +227,23 @@ class K3:
   #
   # Send CW
   # KY text;
-  def sendcw(self,str):
+  def sendcw_orig(self, str):
     try:
         for a in str.split(';'):
             cmd = a+';'
-            print("Sending CW"+cmd)
+            print("Sending " + cmd)
             self.write(cmd)
             print("CW Sent")
     except:
         logging.warning("sendcw issue")
+
+  def sendcw(self, str):
+      try:
+          print("Sending <" + str + ">")
+          self.write(str)
+          print("CW Sent")
+      except:
+          logging.warning("sendcw issue")
 
   # TODO
   # Set speed 15=K015;
@@ -255,12 +265,7 @@ class K3:
   # Set ATT to off=0|on=1
   def ra(self,offon):
     return "Unused"
-    if offon == 'off':
-        offon = 0
-    elif offon == 'on':
-        offon = 1
-    self.write("RA0%s;" % offon)
-    return self.raq()
+
 
   #
   # Get the ATT setting
@@ -269,12 +274,7 @@ class K3:
   # RA01; on
   def raq(self):
     return "Unused"
-    self.write("RA;")
-    result = self.read(5);
-    if (len(result) != 5):
-      return 0
-    offon = result[3]
-    return "RA: %s" % (["off","on"][ord(offon)-ord('0')])
+
 
   #
   # Set the filter
@@ -288,8 +288,8 @@ class K3:
   #
   # Get the filter number
   def filtern(self):
-    self.write("FW;");
-    result = self.read(9);
+      self.write("FW;")
+      result = self.read(9)
     if (len(result) != 9):
       return str(0)
     return str(int(result[6]))
@@ -297,8 +297,8 @@ class K3:
   #
   # Get the filter info
   def filterq(self):
-    self.write("FW;");
-    result = self.read(9);
+      self.write("FW;")
+      result = self.read(9)
     if (len(result) != 9):
       return 0
     return result[2:6] + "Hz " + result[7]
@@ -307,11 +307,7 @@ class K3:
   # Get the display
   def displayq(self):
     return "Unused"
-    self.write("DS;");
-    result = self.read(13);
-    if (len(result) != 13):
-      return 0
-    return result
+
 
   #
   # Get the versions
@@ -323,7 +319,7 @@ class K3:
   # -> RV*nn.nn;
   def verq(self,x):
     self.write("RV%c;" % (x))
-    result = self.read(9);
+    result = self.read(9)
     if (len(result) != 9):
       return 0
     ver = result[3:8]
@@ -333,7 +329,7 @@ class K3:
 
   def showtext(self,text):
     for letter in text:
-      self.write("DB%s;" % (letter));
+        self.write("DB%s;" % (letter))
 
   def k3LcdChar(c):
       if ord(c) > 127:
@@ -343,79 +339,14 @@ class K3:
 
   def timeq(self):
     return "Unused"
-    self.write("K31;MN073;")          # todo: save/restore
-    time.sleep(0.05)
-    self.write("DS;")
-    # DSttttttttaf;
-    result = self.read(13);
-    self.write("MN255;")        # exit menu
-    if (len(result) != 13):
-      return None
-    # TEXT and decimal point data:
-    # This field contains 8 bytes, with values 0x30 - 0xFF (hex).
-    # The first byte is the left-most displayed character.
-    # Bit 7 (MSB) of each byte indicates whether the decimal point
-    # to the left of each character is on (1) or off (0)1.
-    # The other bits contain an ASCII character that corresponds
-    # to the displayed character.
-    # first two chars in time are
-    return "".join([ self.k3LcdChar(c) for c in result[4:10] ])
 
   def fixtime(self):
     def k3LcdChar(c):
       return chr(ord(c)&127)
-    self.write("K31;MN073;")          # todo: save/restore
-    time.sleep(0.05)
-    self.write("DS;")
-    time.sleep(0.05)
-    # DSttttttttaf;
-    result = self.read(13);
-    if (len(result) != 13):
-      self.write("MN255;")        # exit menu
-      return None
-    # TEXT and decimal point data:
-    # This field contains 8 bytes, with values 0x30 - 0xFF (hex).
-    # The first byte is the left-most displayed character.
-    # Bit 7 (MSB) of each byte indicates whether the decimal point
-    # to the left of each character is on (1) or off (0)1.
-    # The other bits contain an ASCII character that corresponds
-    # to the displayed character.
-    # first two chars in time are @@
-    k3hour = int("".join([ k3LcdChar(c) for c in result[4:6] ]))
-    k3minute = int("".join([ k3LcdChar(c) for c in result[6:8] ]))
-    k3second = int("".join([ k3LcdChar(c) for c in result[8:10] ]))
-
-    (year, month, day, hour, minute, second, x, y, z) = time.gmtime()
-    self.write("SWT13;")
-    time.sleep(0.05)
-    while k3second < second:
-      self.write("UP;")
-      k3second = k3second + 1
-    while k3second > second:
-      self.write("DN;")
-      k3second = k3second - 1
-    self.write("SWT12;")
-    time.sleep(0.05)
-    while k3minute < minute:
-      self.write("UP;")
-      k3minute = k3minute + 1
-    while k3minute > minute:
-      self.write("DN;")
-      k3minute = k3minute - 1
-    self.write("SWT11;")
-    time.sleep(0.05)
-    while k3hour < hour:
-      self.write("UP;")
-      k3hour = k3hour + 1
-    while k3hour > hour:
-      self.write("DN;")
-      k3hour = k3hour - 1
-    self.write("MN255;")        # exit menu
-    return self.timeq()
 
 
 if __name__ == "__main__":
-    testmode=3
+    testmode = 0
     rig=K3()
     if testmode==1:
         print("testing K3")
@@ -458,7 +389,8 @@ if __name__ == "__main__":
         rig.modeq()
         print("About to send")
         from time import  sleep
-        rig.sendcw("hi there")
+
+        rig.sendcw("KYW hi there;")
         sleep(3)
         print("Done")
     elif testmode==3:

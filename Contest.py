@@ -1,9 +1,11 @@
 import logging
 from enum import Enum
+
 from dxcc import dxcc_all
+from rbn import HamBand
+
 from ContestUI import *
 from k3 import K3
-from rbn import HamBand
 #from MyEventFilter import MyQSOEventFilter
 from qsoWidget import qsoWidget
 from cwWidget import cwWidget
@@ -11,7 +13,6 @@ from spidWidget import spidWidget
 from spid3 import spid
 from qtbeacon import qtbeacon
 from datetime import datetime
-from qso_text_builder import qso_text_builder
 
 
 class QSOMod(Enum):
@@ -46,9 +47,6 @@ class Contest(Ui_MainWindow):
         # Connect the 2 Signals to a local Method
         self.qso.RUN.connect(self.runMode)
         self.qso.SEARCH.connect(self.runMode)
-
-        #self.qso.myQSOFilter.QSORETURN.connect(self.retPressed)
-        self.CTRYLIST = self._dxcclist.CountryList()
 
         self.beacon_network = qtbeacon()
         self.beacon_network.BEACON.connect(self.onBEACON)
@@ -113,9 +111,6 @@ class Contest(Ui_MainWindow):
             self._number = 1
             return self._number
 
-   # def calcText(self):
-   #     self._textgen.what()
-
     def GetText(self, widget):
         """
         Gets Text Value from a Widget
@@ -158,13 +153,23 @@ class Contest(Ui_MainWindow):
         print("In retPressed data passed is "+txttosend)
         fast=self.cww.lbQRQ.text()
         print("fast is %s"%fast)
-        fastcw=str.format('KS{:03d}; KYW ',int(self.GetText(self.cww.lbQRQ)))
-        slowcw=str.format('KS{:03d}; KYW ',int(self.GetText(self.cww.lbQRS)))
-        txttosend = txttosend.replace('QRQ',fastcw)
-        txttosend = txttosend.replace('QRS',slowcw)
-        self.CMD.setPlainText(txttosend)
-        if self.Rig is not None:
-            self.Rig.sendcw(txttosend)
+        fastcw = str.format('KS{:03d};', int(self.GetText(self.cww.lbQRQ)))
+        slowcw = str.format('KS{:03d};', int(self.GetText(self.cww.lbQRS)))
+
+        for word in txttosend.split(' '):
+            if word == 'QRS':
+                if self.Rig is not None:
+                    self.Rig.sendcw(slowcw)
+                    self.logger.debug(str.format("Rig Sent {}", slowcw))
+            elif word == 'QRQ':
+                if self.Rig is not None:
+                    self.Rig.sendcw(fastcw)
+                    self.logger.debug(str.format("Rig Sent {}", fastcw))
+            else:
+                if self.Rig is not None:
+                    cmd = str.format('KYW {};', word)
+                    self.Rig.sendcw(cmd)
+                    self.logger.debug(str.format("Rig Sent {}", cmd))
 
 
     def onBEACON(self,data):
@@ -172,8 +177,6 @@ class Contest(Ui_MainWindow):
         items=len(data)
         while self.beaconTable.rowCount()<5:
                 self.beaconTable.insertRow(0)
-
-        import pprint
 
         logging.debug(str.format("We got {} beacon objects",items))
         rowPosition=0
@@ -209,7 +212,7 @@ class Contest(Ui_MainWindow):
                 int(self.GetText(self.cww.lbQRQ)))
         return rv
 
-    def what_to_send(self, mode, CALL='', SENT='', RECEIVED=''):
+    def what_to_send_unused(self, mode, CALL='', SENT='', RECEIVED=''):
         """
         This Method is called when the Return Key is pressed
 
@@ -356,6 +359,10 @@ if __name__ == "__main__":
         exit()
     test = 0
     from optparse import OptionParser
+
+    qso_file = ""
+    rules_file = ""
+
     parser = OptionParser()
     parser.add_option("-r", "--rules", dest="rules_filename",
                       help="Rules-contest file to read", metavar="FILE")

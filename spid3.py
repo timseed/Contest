@@ -1,9 +1,8 @@
 # required libraries
-import serial
-import time
-import os
-from time import sleep
 import logging
+from time import sleep
+
+import serial
 
 
 class Serial3(serial.Serial):
@@ -103,11 +102,9 @@ class spid(object):
 
 
 if __name__ == "__main__":
-    import datetime
-
     s = spid()
     sleep(2)
-    s.moveto(100)
+    s.moveto(340)
     sleep(2)
-    s.moveto(90)
+    s.moveto(350)
     sleep(4)

@@ -1,10 +1,13 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import *
-from MyEventFilter import MyQSOEventFilter
-from dxcc import dxcc_all
 import logging
-from qso_text_builder import qso_text_builder
 from datetime import datetime
+
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import *
+from dxcc import dxcc_all
+
+from MyEventFilter import MyQSOEventFilter
+from qso_text_builder import qso_text_builder
+
 
 class qsoWidget(QtWidgets.QWidget):
     logger = logging.getLogger(__name__)
@@ -146,7 +149,7 @@ class qsoWidget(QtWidgets.QWidget):
 
     def getMaxSentNumber(self):
         """
-
+        Read QSO File and get the Number of Lines - i.e. the max number we have sent
         :return: Line count from file
         """
         try:
@@ -158,6 +161,12 @@ class qsoWidget(QtWidgets.QWidget):
         return n
 
     def setfiles(self,qso_file,rules_file):
+        """
+        Pass on Parameters to respective Sub Classes
+        :param qso_file:
+        :param rules_file:
+        :return:
+        """
         self.setContestFile(rules_file)
         self.setQsoFile(qso_file)
 
@@ -172,6 +181,10 @@ class qsoWidget(QtWidgets.QWidget):
 
 
     def saveQSO(self):
+        """
+        This Saves the current QSO
+        :return:
+        """
 
         ofp=open(self.qsofile,"a")
         line=str.format("{},{},{},{},{},{}\n",datetime.now().isoformat(),
