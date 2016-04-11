@@ -102,9 +102,7 @@ class spid(object):
 
 
 if __name__ == "__main__":
+    import sys
     s = spid()
-    sleep(2)
-    s.moveto(340)
-    sleep(2)
-    s.moveto(350)
-    sleep(4)
+    s.moveto(int(sys.argv[1]))
+    

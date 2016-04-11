@@ -26,9 +26,13 @@ class qsoWidget(QtWidgets.QWidget):
         self.BAND.setObjectName("BAND")
         self.BAND.addItem("160")
         self.BAND.addItem("80")
+        self.BAND.addItem("60")
         self.BAND.addItem("40")
+        self.BAND.addItem("30")
         self.BAND.addItem("20")
+        self.BAND.addItem("18")
         self.BAND.addItem("15")
+        self.BAND.addItem("12")
         self.BAND.addItem("10")
         self._lastcall=""
         self.qsl=False
@@ -187,13 +191,15 @@ class qsoWidget(QtWidgets.QWidget):
         """
 
         ofp=open(self.qsofile,"a")
-        line=str.format("{},{},{},{},{},{}\n",datetime.now().isoformat(),
+        line=str.format("{},{},{},{},{},{},{},{}\n",
+                                datetime.now().isoformat(),
                                 self.BAND.currentText(),
                                 self.MODE.currentText(),
                                 self.CALL.text(),
                                 self.RST.text(),
                                 self.SENT.text(),
-                                self.RECEIVE.text())
+                                self.RECEIVE.text(),
+                                self.COUNTRY_NAME.text())
         ofp.write(line)
         ofp.close()
         self._lastcall == self.CALL

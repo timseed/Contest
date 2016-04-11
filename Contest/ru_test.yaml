@@ -1,0 +1,35 @@
+settings:
+   # The Cw Program will
+   #The values CALL SEND RECEIVE NUMBER are based on the QT INPUT
+   #
+   #NUMBER is filled in by the external program
+   #
+   #QRS Means FAST MORSE
+   #QRQ Means SLOW MORSE
+   #This is entered in the Main Window as the CW can be altered
+   #
+   MYCALL: a45wg
+   SENT: 599
+   #MSG1 is CQ
+   MSG1: QRS test rudx MYCALL MYCALL test
+   #MSG2 is a Partial cal
+   MSG2: QRS CALL ?
+   #MSG3
+   MSG3: QRS CALL QRQ SENT QRS NUMBER
+   #MSG4We have sent - but we have not heard out return value
+   MSG4: QRS CALL QRQ SENT QRS NUMBER NUMBER NR ?
+   #MSG5 thanks - all done
+   MSG5: QRS tu de MYCALL
+   #
+   #S&P Messages
+   #
+   #
+   #Trying to get the DX Station
+   MSG6: QRS MYCALL
+   #ANSWERED
+   MSG7: QRS de MYCALL QRQ SENT QRS NUMBER
+   #All Done
+   MSG8: QRS MYCALL tu
+
+
+
