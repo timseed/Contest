@@ -70,6 +70,13 @@ class qsoWidget(QtWidgets.QWidget):
         self.rbSEARCH = QtWidgets.QRadioButton()
         self.rbSEARCH.setChecked(False)
         self.rbSEARCH.setObjectName("rbSEARCH")
+        self.btSAVE = QtWidgets.QPushButton()
+        self.btSAVE.setObjectName("btSAVE")
+        self.btSAVE.setText("Save")
+        self.btCLEAR = QtWidgets.QPushButton()
+        self.btCLEAR.setObjectName("btCLEAR")
+        self.btCLEAR.setText("Clear")
+
 
         layout = QGridLayout(self)
         layout.addWidget(l1, 0, 0)
@@ -91,10 +98,15 @@ class qsoWidget(QtWidgets.QWidget):
         layout.addWidget(self.rbRUN, 7, 2, 1, 1)
         layout.addWidget(l8, 8, 1)
         layout.addWidget(self.rbSEARCH, 8, 2, 1, 1)
+        layout.addWidget(self.btSAVE,  9, 1, 1, 1)
+        layout.addWidget(self.btCLEAR, 9, 2, 1, 1)
 
         # Need to Connect the Radio Buttons to a method which will send a Signal
         self.rbSEARCH.clicked.connect(self.sigMode)
         self.rbRUN.clicked.connect(self.sigMode)
+        #self.btSEARCH.clicked.connect(self.saveQSO())
+        self.btSAVE.clicked.connect(self.saveQSO)
+        self.btCLEAR.clicked.connect(self.clear)
 
         self.myQSOFilter = MyQSOEventFilter()
         self.installEventFilter(self.myQSOFilter)
@@ -189,25 +201,33 @@ class qsoWidget(QtWidgets.QWidget):
         This Saves the current QSO
         :return:
         """
+        if len(self.CALL.text())>2:
+            ofp=open(self.qsofile,"a")
+            line=str.format("{},{},{},{},{},{},{},{}\n",
+                                    datetime.now().isoformat(),
+                                    self.BAND.currentText(),
+                                    self.MODE.currentText(),
+                                    self.CALL.text(),
+                                    self.RST.text(),
+                                    self.SENT.text(),
+                                    self.RECEIVE.text(),
+                                    self.COUNTRY_NAME.text())
+            ofp.write(line)
+            ofp.close()
+            self.clear()
 
-        ofp=open(self.qsofile,"a")
-        line=str.format("{},{},{},{},{},{},{},{}\n",
-                                datetime.now().isoformat(),
-                                self.BAND.currentText(),
-                                self.MODE.currentText(),
-                                self.CALL.text(),
-                                self.RST.text(),
-                                self.SENT.text(),
-                                self.RECEIVE.text(),
-                                self.COUNTRY_NAME.text())
-        ofp.write(line)
-        ofp.close()
+    def clear(self):
+        """
+        Clear the QSO Data
+        :return:
+        """
         self._lastcall == self.CALL
         self.CALL.setText('')
         self.SENT.setText('')
         self.RECEIVE.setText('')
         self.COUNTRY_NAME.setText('')
         self.qsl=False
+        self.CALL.setFocus()
         #      freqhz=self.Rig.qsyq()
         #      meters=self.Band.M(freqhz)
         #      self.BAND.setText(meters)
