@@ -69,23 +69,26 @@ class spid(object):
             print(("Rotator stopped at %3d " % (azs) + "Degrees"))
 
     def status(self):
-        # Build the stop command word.
-        out = chr(87) + self.zero5 + self.zero5 + chr(15) + chr(32)
-        x = self.ser.write(out)
-        # Wait for answer from controller
-        sleep(0.5)
+        try:
+            # Build the stop command word.
+            out = chr(87) + self.zero5 + self.zero5 + chr(15) + chr(32)
+            x = self.ser.write(out)
+            # Wait for answer from controller
+            sleep(0.5)
 
-        data = self.ser.read()
-        # once all 5 characters are received, decode location.
-        if len(data) >= 5:
-            s1 = ord(data[1].encode('latin-1'))
-            s2 = ord(data[2].encode('latin-1'))
-            s3 = ord(data[3].encode('latin-1'))
-            azs = s1 * 100 + s2 * 10 + s3
-            # Since the controller sends the status based on 0 degrees = 360
-            # remove the 360 here
-            azs = azs - 360
-            print(("Rotator stopped at %3d " % (azs) + "Degrees"))
+            data = self.ser.read()
+            # once all 5 characters are received, decode location.
+            if len(data) >= 5:
+                s1 = ord(data[1].encode('latin-1'))
+                s2 = ord(data[2].encode('latin-1'))
+                s3 = ord(data[3].encode('latin-1'))
+                azs = s1 * 100 + s2 * 10 + s3
+                # Since the controller sends the status based on 0 degrees = 360
+                # remove the 360 here
+                azs = azs - 360
+                print(("Rotator stopped at %3d " % (azs) + "Degrees"))
+        except:
+            self.logger.error("Unable to get Spid status")
 
     def __del__(self):
         try:

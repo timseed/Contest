@@ -66,11 +66,11 @@ class K3:
     def qsyq(self):
         # self.ser.flushOutput()
         # self.ser.flushInput()
-        print("get VFO-A")
+        self.logger.debug("get VFO-A")
         self.write("FA;")
         result = self.read(20)
         if len(result) > 15:
-            print("result is " + result)
+            self.logger.debug("result is " + result)
             hz = result.split(';')[2].replace('FA', '')[0:8]
             # FA;FA00024893007;
             return hz
@@ -82,11 +82,11 @@ class K3:
     # FA00014060000
     # FA00007030000
     def qsyq2(self):
-        print("Get VFO-B")
+        self.logger.debug("Get VFO-B")
         self.write("FB;")
         result = self.read(20)
         if len(result) > 15:
-            print("result is " + result)
+            self.logger.debug("result is " + result)
             hz = result.split(';')[2].replace('FB', '')[0:8]
             # FA;FA00024893007;
             return hz
@@ -248,17 +248,17 @@ class K3:
         try:
             for a in str.split(';'):
                 cmd = a + ';'
-                print("Sending " + cmd)
+                self.logger.debug("Sending " + cmd)
                 self.write(cmd)
-                print("CW Sent")
+                self.logger.debug("CW Sent")
         except:
             logging.warning("sendcw issue")
 
     def sendcw(self, str):
         try:
-            print("Sending <" + str + ">")
+            self.logger.debug("Sending <" + str + ">")
             self.write(str)
-            print("CW Sent")
+            self.logger.debug("CW Sent")
         except:
             logging.warning("sendcw issue")
 

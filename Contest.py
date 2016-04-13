@@ -126,9 +126,9 @@ class Contest(Ui_MainWindow):
 
 
     def retPressed(self,txttosend):
-        print("In retPressed data passed is "+txttosend)
+        self.logger.debug("In retPressed data passed is "+txttosend)
         fast=self.cww.lbQRQ.text()
-        print("fast is %s"%fast)
+        self.logger.debug("fast is %s"%fast)
         fastcw = str.format('KS{:03d};', int(self.GetText(self.cww.lbQRQ)))
         slowcw = str.format('KS{:03d};', int(self.GetText(self.cww.lbQRS)))
 
@@ -155,10 +155,10 @@ class Contest(Ui_MainWindow):
         if self.Rig is not None:
             freq=self.Rig.qsyq()
             if len(freq)>4:
-                print("freq is %s"%freq)
+                self.logger.debug("freq is %s"%freq)
                 Band_In_M=self.band.M(float(freq))
                 if Band_In_M != None:
-                    print(str.format("Band in M is {}",Band_In_M))
+                    self.logger.debug(str.format("Band in M is {}",Band_In_M))
                     hf_band_index=self.Band.Index(Band_In_M)
                     if hf_band_index != -1:
                         self.qso.BAND.setCurrentIndex(hf_band_index)
@@ -169,7 +169,7 @@ class Contest(Ui_MainWindow):
         rowPosition=0
         for n in data:
             for i in range(len(n)):
-                #print(str.format("i {} data {} ",i,n[i]))
+                #self.logger.debug(str.format("i {} data {} ",i,n[i]))
                 self.beaconTable.setItem(rowPosition , i, QtWidgets.QTableWidgetItem(str(n[i])))
             rowPosition += 1
 

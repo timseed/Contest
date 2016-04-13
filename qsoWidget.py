@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-
+from locator import locator
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import *
 from dxcc import dxcc_all
@@ -21,6 +21,11 @@ class qsoWidget(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
         self._dxcclist = dxcc_all()
         self._dxcclist.read()
+        #Location stuff
+        self.loc=locator()
+        self.my_qra =''
+
+
         self.BAND = QtWidgets.QComboBox()
         self.BAND.setObjectName("BAND")
         self.BAND.addItem("160")
@@ -37,6 +42,7 @@ class qsoWidget(QtWidgets.QWidget):
         self.qsl=False
         self.qsofile="QSO.csv"
 
+
         self.MODE= QtWidgets.QComboBox()
         self.MODE.setObjectName("MODE")
         self.MODE.addItem("CW")
@@ -51,7 +57,8 @@ class qsoWidget(QtWidgets.QWidget):
         l6 = QLabel(self.tr("Country:"))
         l7 = QLabel(self.tr("Run:"))
         l8 = QLabel(self.tr("Search:"))
-
+        self.lbBearing   = QLabel(self.tr("Bearing"))
+        self.lbDistance  = QLabel(self.tr("Distance"))
         self.CALL = QtWidgets.QLineEdit()
         self.CALL.setObjectName("CALL")
         self.RST = QtWidgets.QLineEdit()
@@ -97,8 +104,12 @@ class qsoWidget(QtWidgets.QWidget):
         layout.addWidget(self.rbRUN, 7, 2, 1, 1)
         layout.addWidget(l8, 8, 1)
         layout.addWidget(self.rbSEARCH, 8, 2, 1, 1)
-        layout.addWidget(self.btSAVE,  9, 1, 1, 1)
-        layout.addWidget(self.btCLEAR, 9, 2, 1, 1)
+        layout.addWidget(self.lbBearing, 9, 1)
+        layout.addWidget(self.lbDistance, 10, 1)
+        layout.addWidget(self.btSAVE,  11, 1, 1, 1)
+        layout.addWidget(self.btCLEAR, 11, 2, 1, 1)
+
+
 
         # Need to Connect the Radio Buttons to a method which will send a Signal
         self.rbSEARCH.clicked.connect(self.sigMode)
@@ -144,6 +155,21 @@ class qsoWidget(QtWidgets.QWidget):
                 if ctry is not None:
                     logging.debug(str.format("COUNTRY_NAME needs to be set as <{}>",ctry.Country_Name()))
                     self.COUNTRY_NAME.setText(ctry.Country_Name())
+                    try:
+                        dx_lat=float(ctry.Latitude())
+                        dx_lon=-1.0*float(ctry.Longitude())
+
+                        dx_qra=self.loc.latlong_to_locator(dx_lat,dx_lon)
+                        self.logger.debug('Ctry {} Lat {} Lon {} Qra {}'.format(ctry.Country_Name(),dx_lat,dx_lon,dx_qra))
+                        dx_bearing_sp = self.loc.calculate_heading(self.my_qra, dx_qra)
+                        dx_bearing_lp = self.loc.calculate_heading_longpath(self.my_qra, dx_qra)
+                        dx_dist_sp = self.loc.calculate_distance(self.my_qra, dx_qra)
+                        dx_dist_lp = self.loc.calculate_distance_longpath(self.my_qra, dx_qra)
+                        self.lbBearing.setText('{:3.0f}/{:3.0f} Deg'.format(dx_bearing_sp,dx_bearing_lp))
+                        self.lbDistance.setText('{:5.0f}/{:5.0f} Kms'.format(dx_dist_sp,dx_dist_lp))
+
+                    except:
+                        self.logger.error("Error calculating bearings Country is {}".format(ctry.CountryName))
                 else:
                     logging.warning(str.format("Can not match Call of <{}>",call))
         except Exception as e:
@@ -166,6 +192,7 @@ class qsoWidget(QtWidgets.QWidget):
             self.CALL.setFocus()
 
     def setQSL(self):
+        logging.info("setQSL called")
         self.qsl=True
 
     def getMaxSentNumber(self):
@@ -173,11 +200,13 @@ class qsoWidget(QtWidgets.QWidget):
         Read QSO File and get the Number of Lines - i.e. the max number we have sent
         :return: Line count from file
         """
+        logging.info("getMaxSentNumber called")
         try:
             with open(self.qsofile,"r") as file:
                 n=len(file.readlines())
                 file.close()
         except:
+            self.logger.error("File {} was not opened - set QSO to 0".format(self.qsofile))
             n=0
         return n
 
@@ -188,11 +217,12 @@ class qsoWidget(QtWidgets.QWidget):
         :param rules_file:
         :return:
         """
+        self.logger.info('setfiles called')
         self.setContestFile(rules_file)
         self.setQsoFile(qso_file)
 
     def setContestFile(self,rules_file):
-        self.logger.info(str.format("Setting Contest file to {}",rules_file))
+        self.logger.info('setContestFile called using {}'.format(rules_file))
         self.textbuilder.setrulesfile(rules_file)
 
     def setQsoFile(self,qso_file):
@@ -201,12 +231,16 @@ class qsoWidget(QtWidgets.QWidget):
         self.textbuilder.setnumber(self.getMaxSentNumber())
 
 
+    def setlocation(self,location_in_maidenhead_format):
+        self.logger.debug('Setting location QRA as {}'.format(location_in_maidenhead_format))
+        self.my_qra =location_in_maidenhead_format
+
     def saveQSO(self):
         """
         This Saves the current QSO
         :return:
         """
-        self.logger.debug("saveQSO Being called")
+        self.logger.info("saveQSO Being called")
         if len(self.CALL.text())>2:
             try:
                 ofp=open(self.qsofile,"a")

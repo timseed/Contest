@@ -1,0 +1,18 @@
+QLineEdit#CALL { background-color: yellow }
+QLineEdit#SENT { background-color: yellow }
+QLineEdit#COUNTRY_NAME { background-color: peachpuff}
+QLineEdit#RECEIVE { background-color: yellow}
+QPushButton#btSAVE { background-color: greenyellow}
+QPushButton#btCLEAR { background-color: orangered}
+QPushButton        { background-color: peachpuff}
+QLineEdit          { background-color: cornsilk}
+QComboBox  { background-color: darkgray; border: double}
+QFrame     { border: solid}
+QGridLayout {background-color: red}
+
+QPushButton#cancelButton { background-color: red}
+QPushButton#statusButton { background-color: peachpuff}
+QPushButton#rotateButton { background-color: greenyellow}
+
+
+
