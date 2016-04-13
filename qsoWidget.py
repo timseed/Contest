@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import *
 from dxcc import dxcc_all
 
@@ -10,7 +10,6 @@ from qso_text_builder import qso_text_builder
 
 
 class qsoWidget(QtWidgets.QWidget):
-    logger = logging.getLogger(__name__)
     # Some Signals we want to send from this class
     RUN = QtCore.pyqtSignal(str)
     SEARCH = QtCore.pyqtSignal(str)
@@ -18,7 +17,7 @@ class qsoWidget(QtWidgets.QWidget):
     SAVE = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
-
+        self.logger = logging.getLogger(__name__)
         QtWidgets.QWidget.__init__(self, parent)
         self._dxcclist = dxcc_all()
         self._dxcclist.read()
@@ -118,6 +117,12 @@ class qsoWidget(QtWidgets.QWidget):
         self.textbuilder.SENT.connect(self.setSent)
         self.textbuilder.QSL.connect(self.setQSL)
 
+        self.saveshortcut = QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
+        self.saveshortcut.activated.connect(self.saveQSO)
+        self.clearshortcut = QShortcut(QtGui.QKeySequence("Ctrl+C"), self)
+        self.clearshortcut.activated.connect(self.clear)
+
+
         #Get the Max QSO Number
         self.textbuilder.setnumber(self.getMaxSentNumber())
 
@@ -201,26 +206,33 @@ class qsoWidget(QtWidgets.QWidget):
         This Saves the current QSO
         :return:
         """
+        self.logger.debug("saveQSO Being called")
         if len(self.CALL.text())>2:
-            ofp=open(self.qsofile,"a")
-            line=str.format("{},{},{},{},{},{},{},{}\n",
-                                    datetime.now().isoformat(),
-                                    self.BAND.currentText(),
-                                    self.MODE.currentText(),
-                                    self.CALL.text(),
-                                    self.RST.text(),
-                                    self.SENT.text(),
-                                    self.RECEIVE.text(),
-                                    self.COUNTRY_NAME.text())
-            ofp.write(line)
-            ofp.close()
-            self.clear()
+            try:
+                ofp=open(self.qsofile,"a")
+                self.logger.debug('{} opened successfully'.format(self.qsofile))
+                line=str.format("{},{},{},{},{},{},{},{}\n",
+                                        datetime.now().isoformat(),
+                                        self.BAND.currentText(),
+                                        self.MODE.currentText(),
+                                        self.CALL.text(),
+                                        self.RST.text(),
+                                        self.SENT.text(),
+                                        self.RECEIVE.text(),
+                                        self.COUNTRY_NAME.text())
+                ofp.write(line)
+                ofp.close()
+                self.logger.debug('QSO Saved successfully'.format(self.qsofile))
+                self.clear()
+            except:
+                self.logger.error('Problem saving QSO in {}'.format(self.qsofile))
 
     def clear(self):
         """
         Clear the QSO Data
         :return:
         """
+        self.logger.debug('clear being called')
         self._lastcall == self.CALL
         self.CALL.setText('')
         self.SENT.setText('')
@@ -228,13 +240,16 @@ class qsoWidget(QtWidgets.QWidget):
         self.COUNTRY_NAME.setText('')
         self.qsl=False
         self.CALL.setFocus()
+        self.logger.debug('clear finished ok')
         #      freqhz=self.Rig.qsyq()
         #      meters=self.Band.M(freqhz)
         #      self.BAND.setText(meters)
 
     def setSent(self,num):
+        self.logger.debug('setSent being called')
         self.SENT.setText(num)
         self.RECEIVE.setFocus()
+        self.logger.debug('setSent finished ok')
 
     def sigMode(self):
         if self.rbRUN.isChecked():
