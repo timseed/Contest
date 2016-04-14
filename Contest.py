@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-
+import datetime
 from dxcc import dxcc_all
 from rbn import HamBand
 
@@ -55,6 +55,7 @@ class Contest(Ui_MainWindow):
             self._rbn.RBN.connect(self.onRBN)
             self.logger.debug('RBN Starting')
             self._rbn.start()
+            #Note the Button is setup in SetupUI
             self.logger.info('RBN Started')
         except Exception as e:
             self.logger.error("Error with rbn {}".format(str(e)))
@@ -109,6 +110,10 @@ class Contest(Ui_MainWindow):
         self.beaconTable.setHorizontalHeaderItem(0,QtWidgets.QTableWidgetItem("Call"))
         self.beaconTable.setHorizontalHeaderItem(1,QtWidgets.QTableWidgetItem("Country"))
         self.beaconTable.setHorizontalHeaderItem(2,QtWidgets.QTableWidgetItem("Freq"))
+        try:
+            self.rbnClear.clicked.connect(self.onRBNclear)
+        except Exception as e:
+            self.logger.error("Error setting up rbnClear "+str(e))
 
     def nextNumber(self):
         try:
@@ -169,6 +174,29 @@ class Contest(Ui_MainWindow):
         """
         self.logger.debug('RBN data has arrived')
         print("RBN data has arrived")
+
+        items=len(data)
+        logging.debug(str.format("We got {} beacon objects",items))
+        rowPosition=self.rbnTable.rowCount()
+        for n in data:
+            self.rbnTable.insertRow(rowPosition)
+            tn=datetime.now()
+            tn=tn.time().strftime('%H:%M:%S')
+            self.rbnTable.setItem(rowPosition , 0, QtWidgets.QTableWidgetItem(str(tn)))
+
+            for i in range(len(n)):
+                self.logger.debug("Adding Data at {} {} data {} ".format(rowPosition,i+1,n[i]))
+                print("Adding Data at {} {} data {} ".format(rowPosition,i+1,n[i]))
+                self.rbnTable.setItem(rowPosition ,
+                                      i+1,
+                                      QtWidgets.QTableWidgetItem(str(n[i])))
+            rowPosition += 1
+
+    def onRBNclear(self):
+        row = self.rbnTable.rowCount()
+        while row>=0:
+            self.rbnTable.removeRow(row)
+            row=row-1
 
     def onBEACON(self,data):
         logging.debug("Beacon Data Arrived")

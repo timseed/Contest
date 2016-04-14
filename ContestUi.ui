@@ -25,9 +25,9 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QTabWidget" name="tabWidget">
+        <widget class="QTabWidget" name="rbnTab">
          <property name="currentIndex">
-          <number>1</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -75,6 +75,87 @@
           <attribute name="title">
            <string>Dx-Cluster</string>
           </attribute>
+         </widget>
+         <widget class="QWidget" name="tab_4">
+          <attribute name="title">
+           <string>RBN</string>
+          </attribute>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QFrame" name="frame_2">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="QRadioButton" name="rbnMycall">
+                <property name="text">
+                 <string>My Call</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="rbnClear">
+                <property name="text">
+                 <string>Clear</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTableWidget" name="rbnTable">
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <property name="columnCount">
+              <number>10</number>
+             </property>
+             <column>
+              <property name="text">
+               <string>Time</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Skimmer</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Call</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Country</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Freq</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Band</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>S/N</string>
+              </property>
+             </column>
+             <column/>
+             <column/>
+             <column/>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </widget>
        </item>
