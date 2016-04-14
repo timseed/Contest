@@ -65,3 +65,12 @@ In Diff format this is
 >         QtCore.QMetaObject.connectSlotsByName(self)
 71d59
 <         qso.setWindowTitle(_translate("qso", "Form"))
+
+
+#Colors
+
+In the past in "other" GUI's - You spend ages messing around with colors and fonts etc - it is nice to be able to place the formatting in a file and generate it as the Interface is rendered. It also allows anyone else to customize this as they desire.
+
+
+#Locations
+The Locations from the dxcc are in "US" Lat/long i.e. West is positive - East is Negative. I have kept the data files in their original format plus the dxcc code is the same.

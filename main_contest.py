@@ -66,17 +66,10 @@ if __name__ == "__main__":
     except:
         logger.error("Error reading contest.css")
 
-
-    #MainWindow.setStyleSheet("QLineEdit { background-color: yellow }");
-    #ui.qso.setStyleSheet("QLineEdit#CALL { background-color: yellow }")
-    #MainWindow.setStyleSheet("QLineEdit#CALL { background-color: yellow }")
-
+    #Pass in the command line options
     ui.qso.setfiles(qso_file,rules_file)
     ui.qso.setlocation(location)
-
-    #ui.setContestFile(rules_file)
-    #ui.setQsoFile(qso_file)
-
+    #Run Main Window
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())

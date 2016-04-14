@@ -13,7 +13,9 @@ from spidWidget import spidWidget
 from spid3 import spid
 from qtbeacon import qtbeacon
 from datetime import datetime
-from rbn import HamBand
+from rbn import HamBand, rbn
+from qtrbn import qtrbn
+
 
 class QSOMod(Enum):
     RUN = 0
@@ -46,6 +48,16 @@ class Contest(Ui_MainWindow):
         self.beacon_network = qtbeacon()
         self.beacon_network.BEACON.connect(self.onBEACON)
         self.beacon_network.start()
+
+        self._rbn = qtrbn()
+        try:
+            self.logger.debug('setting up RBN Signal')
+            self._rbn.RBN.connect(self.onRBN)
+            self.logger.debug('RBN Starting')
+            self._rbn.start()
+            self.logger.info('RBN Started')
+        except Exception as e:
+            self.logger.error("Error with rbn {}".format(str(e)))
 
         self._spidgui.MOVETO.connect(self._spid.moveto)
         self._spidgui.STOP.connect(self._spid.stop)
@@ -148,6 +160,15 @@ class Contest(Ui_MainWindow):
                     self.logger.debug(str.format("Rig Sent {}", cmd))
         if self.Rig is not None:
             self.Rig.sendcw(slowcw)
+
+    def onRBN(self,data):
+        """
+        Handle the RBN Signal
+        :param data: a list of rbn_tup types
+        :return:
+        """
+        self.logger.debug('RBN data has arrived')
+        print("RBN data has arrived")
 
     def onBEACON(self,data):
         logging.debug("Beacon Data Arrived")
