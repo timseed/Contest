@@ -52,6 +52,7 @@ class Contest(Ui_MainWindow):
         self._rbn = qtrbn()
         try:
             self.logger.debug('setting up RBN Signal')
+            self.rbnWantedBand='All'
             self._rbn.RBN.connect(self.onRBN)
             self.logger.debug('RBN Starting')
             self._rbn.start()
@@ -115,6 +116,15 @@ class Contest(Ui_MainWindow):
         except Exception as e:
             self.logger.error("Error setting up rbnClear "+str(e))
 
+
+        try:
+            self.cbrbnBand.currentIndexChanged['int'].connect(self.rbnBandChange)
+        except Exception as e:
+            self.logger.error("Error setting up rbnBandChange "+str(e))
+
+
+
+
     def nextNumber(self):
         try:
             self._number = self._number + 1
@@ -139,6 +149,13 @@ class Contest(Ui_MainWindow):
         except:
             logging.error("Some other error")
             return ''
+
+    def rbnBandChange(self,band_id):
+        self.logger.debug("rbnBandChange called")
+        junk=1
+        self.rbnWantedBand = str(self.cbrbnBand.currentText())
+        if self.rbnWantedBand != 'All':
+            self.onRBNclear()
 
 
 
@@ -179,18 +196,22 @@ class Contest(Ui_MainWindow):
         logging.debug(str.format("We got {} beacon objects",items))
         rowPosition=self.rbnTable.rowCount()
         for n in data:
-            self.rbnTable.insertRow(rowPosition)
-            tn=datetime.now()
-            tn=tn.time().strftime('%H:%M:%S')
-            self.rbnTable.setItem(rowPosition , 0, QtWidgets.QTableWidgetItem(str(tn)))
+            if self.rbnWantedBand == 'All' or self.rbnWantedBand == n[4]:
 
-            for i in range(len(n)):
-                self.logger.debug("Adding Data at {} {} data {} ".format(rowPosition,i+1,n[i]))
-                print("Adding Data at {} {} data {} ".format(rowPosition,i+1,n[i]))
-                self.rbnTable.setItem(rowPosition ,
-                                      i+1,
-                                      QtWidgets.QTableWidgetItem(str(n[i])))
-            rowPosition += 1
+                self.rbnTable.insertRow(rowPosition)
+                tn=datetime.now()
+                tn=tn.time().strftime('%H:%M:%S')
+                self.rbnTable.setItem(rowPosition , 0, QtWidgets.QTableWidgetItem(str(tn)))
+
+                for i in range(len(n)):
+                    self.logger.debug("Adding Data at {} {} data {} ".format(rowPosition,i+1,n[i]))
+                    print("Adding Data at {} {} data {} ".format(rowPosition,i+1,n[i]))
+                    self.rbnTable.setItem(rowPosition ,
+                                          i+1,
+                                          QtWidgets.QTableWidgetItem(str(n[i])))
+                rowPosition += 1
+            else:
+                self.logger.debug("rbn Record rejected due to Band settings")
 
     def onRBNclear(self):
         row = self.rbnTable.rowCount()
