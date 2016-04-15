@@ -57,6 +57,7 @@ class qsoWidget(QtWidgets.QWidget):
         l6 = QLabel(self.tr("Country:"))
         l7 = QLabel(self.tr("Run:"))
         l8 = QLabel(self.tr("Search:"))
+        l9 = QLabel(self.tr("Auto:"))
         self.lbBearing   = QLabel(self.tr("Bearing"))
         self.lbDistance  = QLabel(self.tr("Distance"))
         self.CALL = QtWidgets.QLineEdit()
@@ -82,6 +83,9 @@ class qsoWidget(QtWidgets.QWidget):
         self.btCLEAR = QtWidgets.QPushButton()
         self.btCLEAR.setObjectName("btCLEAR")
         self.btCLEAR.setText("Clear")
+        self.rbAUTO = QtWidgets.QRadioButton()
+        self.rbAUTO.setChecked(True)
+        self.rbAUTO.setObjectName("rbAUTO")
 
 
         layout = QGridLayout(self)
@@ -108,6 +112,8 @@ class qsoWidget(QtWidgets.QWidget):
         layout.addWidget(self.lbDistance, 10, 1)
         layout.addWidget(self.btSAVE,  11, 1, 1, 1)
         layout.addWidget(self.btCLEAR, 11, 2, 1, 1)
+        layout.addWidget(l9, 13, 0)
+        layout.addWidget(self.rbAUTO, 13, 1, 1, 1)
 
 
 
@@ -186,10 +192,13 @@ class qsoWidget(QtWidgets.QWidget):
         #
         #Replace QRS and QRQ In the MAIN Window - as we do not own the CW Widget
         #
-        self.TEXT.emit(txttosend)
-        if self.qsl==True:
-            self.saveQSO()
-            self.CALL.setFocus()
+        if self.rbAUTO.isChecked():
+            self.TEXT.emit(txttosend)
+            if self.qsl==True:
+                self.saveQSO()
+                self.CALL.setFocus()
+        else:
+            self.logger.info("No auto actions performed as Not set to AUTO Mode")
 
     def setQSL(self):
         logging.info("setQSL called")
