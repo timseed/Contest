@@ -74,3 +74,14 @@ In the past in "other" GUI's - You spend ages messing around with colors and fon
 
 #Locations
 The Locations from the dxcc are in "US" Lat/long i.e. West is positive - East is Negative. I have kept the data files in their original format plus the dxcc code is the same.
+i
+#Mod 9
+
+##Auto Mode
+
+Rather a late change - this turns on and off Auto Saving - and auto sending. So if you are unplugged from the K3 - you can use this option. The buttons Save and clear are easy to press (although they should have a shortcut added to them).
+
+##rbn
+The rnm page is working nicely - it can be cleared - and also set to only show a specific band that you are interested in working. At the moment the **Call Sign** radio button does nothing - but that may change in the future.
+
+
