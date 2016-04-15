@@ -41,7 +41,7 @@ loggers:
         propagate: yes
 
     rbn:
-        level: DEBUG
+        level: ERROR
         handlers: [console]
         propogate: yes
 

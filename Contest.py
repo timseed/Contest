@@ -15,6 +15,7 @@ from qtbeacon import qtbeacon
 from datetime import datetime
 from rbn import HamBand, rbn
 from qtrbn import qtrbn
+from hamstats import ContestCountries
 
 
 class QSOMod(Enum):
@@ -44,6 +45,7 @@ class Contest(Ui_MainWindow):
         self.qso = qsoWidget()
         self.cww = cwWidget()
         self.band = HamBand()  #Convert from hz to M
+        self.Score = ContestCountries()
 
         self.beacon_network = qtbeacon()
         self.beacon_network.BEACON.connect(self.onBEACON)
@@ -65,6 +67,7 @@ class Contest(Ui_MainWindow):
         self._spidgui.STOP.connect(self._spid.stop)
         self._spidgui.STATUS.connect(self._spid.status)
         self.qso.TEXT.connect(self.retPressed)
+        self.qso.SAVE.connect(self.onSAVE)
 
         try:
             self.Rig = K3()  # My Rig Controll Class
@@ -243,5 +246,15 @@ class Contest(Ui_MainWindow):
                 self.beaconTable.setItem(rowPosition , i, QtWidgets.QTableWidgetItem(str(n[i])))
             rowPosition += 1
 
-
-
+    def onSAVE(self,qsofilename):
+        """
+        Handle the RBN Signal
+        :param data: a list of rbn_tup types
+        :return:
+        """
+        self.logger.debug('SAVE signal has arrived')
+        try:
+            score_text=self.Score.process(qsofilename)
+            self.stats.setText(score_text)
+        except Exception as e:
+            self.logger.error('Problem calculating the score {}'.format(str(e)))

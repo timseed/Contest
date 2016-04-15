@@ -27,8 +27,11 @@ class Ui_MainWindow(object):
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.CMD = QtWidgets.QPlainTextEdit(self.tab)
-        self.CMD.setGeometry(QtCore.QRect(20, 20, 601, 161))
+        self.CMD.setGeometry(QtCore.QRect(20, 20, 601, 61))
         self.CMD.setObjectName("CMD")
+        self.stats = QtWidgets.QTextEdit(self.tab)
+        self.stats.setGeometry(QtCore.QRect(20, 110, 561, 351))
+        self.stats.setObjectName("stats")
         self.rbnTab.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -177,7 +180,7 @@ class Ui_MainWindow(object):
         MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(8), self.dockWidget_2)
 
         self.retranslateUi(MainWindow)
-        self.rbnTab.setCurrentIndex(3)
+        self.rbnTab.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

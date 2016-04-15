@@ -27,7 +27,7 @@
        <item>
         <widget class="QTabWidget" name="rbnTab">
          <property name="currentIndex">
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -39,7 +39,17 @@
              <x>20</x>
              <y>20</y>
              <width>601</width>
-             <height>161</height>
+             <height>61</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QTextEdit" name="stats">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>110</y>
+             <width>561</width>
+             <height>351</height>
             </rect>
            </property>
           </widget>

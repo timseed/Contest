@@ -70,15 +70,18 @@ class ContestCountries(WorkedCountries):
             for line in f:
                 (qsodate,band,mode,call,rst,sent,receive,country_name) = line.split(',')
                 country_name=country_name.lstrip().rstrip()
-                self.Countries_Band_To_Work[country_name][int(band)]['status']=self.Countries_Band_To_Work[country_name][int(band)]['status']+1
-                qso_datetime = datetime.strptime(qsodate,'%Y-%m-%dT%H:%M:%S.%f')
-                hourssince=int((now-qso_datetime).seconds/3600)
-                if hourssince <=4:
-                    last_4_hour = last_4_hour +1
-                    if hourssince <=2:
-                        last_2_hour = last_2_hour +1
-                        if hourssince <=1:
-                            last_1_hour = last_1_hour +1
+                try:
+                    self.Countries_Band_To_Work[country_name][int(band)]['status']=self.Countries_Band_To_Work[country_name][int(band)]['status']+1
+                    qso_datetime = datetime.strptime(qsodate,'%Y-%m-%dT%H:%M:%S.%f')
+                    hourssince=int((now-qso_datetime).seconds/3600)
+                    if hourssince <=4:
+                        last_4_hour = last_4_hour +1
+                        if hourssince <=2:
+                            last_2_hour = last_2_hour +1
+                            if hourssince <=1:
+                                last_1_hour = last_1_hour +1
+                except Exception as e:
+                    self.logger.error("Problem with stats for a record {} {}".format(line,str(e)))
             f.close()
 
         #Now Per band country the unique countries
@@ -98,7 +101,13 @@ class ContestCountries(WorkedCountries):
         import pprint
         pprint.pprint(band_ctry_qso_totals)
         pprint.pprint(band_qso_totals)
-        print('1h {} 2h {} 4h {}'.format(last_1_hour,last_2_hour,last_4_hour))
+        rv='Band\tCtry\tTotal\n\n'
+        for n in range(len(band_qso_totals)):
+            rv=rv+'{}\t{}\t{}\t\n'.format(self.hb.Band[n],band_ctry_qso_totals[n],band_qso_totals[n])
+        rv=rv+'\n\nLast Hours:\n\t\t1h {} 2h {} 4h {}'.format(last_1_hour,last_2_hour,last_4_hour)
+        return rv
+
+
 
 if __name__ == "__main__":
     cc=ContestCountries()

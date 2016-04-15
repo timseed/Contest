@@ -267,6 +267,7 @@ class qsoWidget(QtWidgets.QWidget):
                 ofp.close()
                 self.logger.debug('QSO Saved successfully'.format(self.qsofile))
                 self.clear()
+                self.SAVE.emit(self.qsofile)
             except:
                 self.logger.error('Problem saving QSO in {}'.format(self.qsofile))
 
